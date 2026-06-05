@@ -90,7 +90,7 @@
     .dropdown-menu {
       display: none;
       position: absolute;
-      top: calc(100% + 16px);
+      top: 100%;
       left: 50%;
       transform: translateX(-50%);
       background: var(--bg-card2);
@@ -99,6 +99,8 @@
       padding: 8px;
       min-width: 200px;
       box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+      padding-top: 16px;
+      margin-top: 0;
     }
     .dropdown:hover .dropdown-menu { display: block; }
     .dropdown-menu a {
