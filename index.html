@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>明数 · 数据驱动增长</title>
+  <!-- 本地字体回退，不依赖 Google Fonts -->
+  <style>
+    :root {
+      --bg-deep: #0A1628;
+      --bg-card: #0D1E38;
+      --bg-card2: #0F2244;
+      --blue-main: #1E6FFF;
+      --blue-light: #4A90FF;
+      --blue-glow: rgba(30, 111, 255, 0.25);
+      --blue-glow-strong: rgba(30, 111, 255, 0.5);
+      --text-primary: #FFFFFF;
+      --text-secondary: #8BA4C8;
+      --text-muted: #4A6080;
+      --border: rgba(30, 111, 255, 0.15);
+      --border-hover: rgba(30, 111, 255, 0.5);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      overflow-x: hidden;
+      font-size: 17px;
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 0 5%;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background 0.3s, backdrop-filter 0.3s, border-bottom 0.3s;
+    }
+    nav.scrolled {
+      background: rgba(10, 22, 40, 0.8);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-icon {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, var(--blue-main), #00D4FF);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 17px;
+      font-weight: 500;
+      transition: color 0.2s;
+      position: relative;
+    }
+    .nav-links a:hover { color: var(--text-primary); }
+
+    .dropdown { position: relative; }
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: calc(100% + 16px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-card2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 8px;
+      min-width: 200px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+    .dropdown:hover .dropdown-menu { display: block; }
+    .dropdown-menu a {
+      display: block;
+      padding: 10px 16px;
+      border-radius: 8px;
+      color: var(--text-secondary) !important;
+      font-size: 14px;
+      transition: background 0.2s, color 0.2s;
+    }
+    .dropdown-menu a:hover {
+      background: var(--blue-glow);
+      color: var(--text-primary) !important;
+    }
+
+    .nav-cta {
+      background: var(--blue-main);
+      color: var(--text-primary) !important;
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 15px;
+      text-decoration: none;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+    .nav-cta:hover {
+      background: var(--blue-light);
+      box-shadow: 0 0 24px var(--blue-glow-strong);
+      transform: translateY(-1px);
+    }
+
+    /* ─── HERO ─── */
+    #hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 5% 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #hero-canvas {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+
+    .hero-glow {
+      position: absolute;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(30,111,255,0.15) 0%, transparent 70%);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .hero-content { position: relative; z-index: 2; max-width: 800px; }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(30,111,255,0.1);
+      border: 1px solid rgba(30,111,255,0.3);
+      border-radius: 100px;
+      padding: 6px 16px;
+      font-size: 13px;
+      color: var(--blue-light);
+      margin-bottom: 32px;
+    }
+    .hero-badge span { width: 6px; height: 6px; background: #00D4FF; border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    h1 {
+      font-size: clamp(36px, 5vw, 64px);
+      font-weight: 700;
+      line-height: 1.15;
+      margin-bottom: 24px;
+      letter-spacing: -0.02em;
+    }
+    h1 .gradient {
+      background: linear-gradient(135deg, #FFFFFF 30%, #4A90FF 70%, #00D4FF 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      font-size: clamp(16px, 2vw, 20px);
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: 48px;
+      max-width: 580px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .hero-btns {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      background: var(--blue-main);
+      color: #fff;
+      padding: 14px 32px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+      box-shadow: 0 0 0 rgba(30,111,255,0);
+    }
+    .btn-primary:hover {
+      background: var(--blue-light);
+      box-shadow: 0 0 32px rgba(30,111,255,0.5);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-primary);
+      padding: 14px 32px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 500;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover {
+      border-color: var(--border-hover);
+      background: var(--blue-glow);
+    }
+
+    /* ─── SECTION BASE ─── */
+    section { padding: 96px 5%; }
+    .section-label {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--blue-light);
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-size: clamp(28px, 3.5vw, 42px);
+      font-weight: 700;
+      line-height: 1.25;
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+    .section-desc {
+      font-size: 17px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      max-width: 540px;
+    }
+    .section-header { margin-bottom: 64px; }
+
+    /* ─── PLATFORMS ─── */
+    #platforms { background: var(--bg-deep); }
+    .platform-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+    }
+    .platform-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 36px 32px;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .platform-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top left, var(--blue-glow), transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .platform-card:hover {
+      border-color: var(--border-hover);
+      box-shadow: 0 0 40px rgba(30,111,255,0.15);
+      transform: translateY(-4px);
+    }
+    .platform-card:hover::before { opacity: 1; }
+
+    .platform-icon {
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      margin-bottom: 24px;
+    }
+    .icon-blue { background: rgba(30,111,255,0.15); }
+    .icon-cyan { background: rgba(0,212,255,0.15); }
+    .icon-purple { background: rgba(139,92,246,0.15); }
+
+    .platform-card h3 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .platform-card p {
+      color: var(--text-secondary);
+      font-size: 15px;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    .card-link {
+      color: var(--blue-light);
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: gap 0.2s;
+    }
+    .card-link:hover { gap: 10px; }
+
+    /* ─── CAPABILITIES ─── */
+    #capabilities {
+      background: linear-gradient(180deg, var(--bg-deep) 0%, #0C1A30 100%);
+    }
+    .cap-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 2px;
+      background: var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .cap-item {
+      background: var(--bg-card);
+      padding: 40px 32px;
+      transition: background 0.2s;
+    }
+    .cap-item:hover { background: var(--bg-card2); }
+    .cap-icon { font-size: 36px; margin-bottom: 20px; }
+    .cap-item h3 { font-size: 18px; font-weight: 600; margin-bottom: 10px; }
+    .cap-item p { color: var(--text-secondary); font-size: 14px; line-height: 1.6; }
+
+    /* ─── METRICS ─── */
+    #metrics {
+      background: var(--bg-deep);
+      text-align: center;
+    }
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 32px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .metric-item { padding: 32px; }
+    .metric-num {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      font-size: clamp(40px, 5vw, 64px);
+      font-weight: 700;
+      background: linear-gradient(135deg, #FFFFFF, var(--blue-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+    .metric-label { color: var(--text-secondary); font-size: 15px; }
+    .metric-divider {
+      width: 1px;
+      background: var(--border);
+      align-self: stretch;
+    }
+
+    /* ─── CASES ─── */
+    #cases { background: #0C1A30; }
+    .logos-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 64px;
+      align-items: center;
+    }
+    .logo-chip {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+    }
+    .logo-chip:hover {
+      border-color: var(--border-hover);
+      color: var(--text-primary);
+      background: var(--bg-card2);
+    }
+    .case-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+    }
+    .case-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 36px 32px;
+      transition: all 0.3s;
+    }
+    .case-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+    }
+    .case-tag {
+      display: inline-block;
+      background: rgba(30,111,255,0.1);
+      border: 1px solid rgba(30,111,255,0.2);
+      color: var(--blue-light);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+    }
+    .case-card h3 { font-size: 18px; font-weight: 600; margin-bottom: 12px; }
+    .case-card p { color: var(--text-secondary); font-size: 15px; line-height: 1.65; margin-bottom: 24px; }
+    .case-metric {
+      display: flex;
+      gap: 32px;
+    }
+    .case-metric-item span {
+      display: block;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--blue-light);
+    }
+    .case-metric-item small {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* ─── RESOURCES ─── */
+    #resources { background: var(--bg-deep); }
+    .res-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+    .res-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px;
+      text-decoration: none;
+      color: var(--text-primary);
+      transition: all 0.3s;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .res-card:hover {
+      border-color: var(--border-hover);
+      background: var(--bg-card2);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    .res-icon { font-size: 28px; }
+    .res-card h3 { font-size: 16px; font-weight: 600; }
+    .res-card p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; flex: 1; }
+    .res-arrow { color: var(--blue-light); font-size: 14px; font-weight: 500; }
+
+    /* ─── CTA BANNER ─── */
+    #cta {
+      background: linear-gradient(135deg, #0D1E38 0%, #0A1628 100%);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    #cta::before {
+      content: '';
+      position: absolute;
+      width: 800px; height: 400px;
+      background: radial-gradient(ellipse, rgba(30,111,255,0.12) 0%, transparent 70%);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    .cta-content { position: relative; z-index: 1; }
+    #cta h2 { font-size: clamp(28px, 4vw, 48px); font-weight: 700; margin-bottom: 20px; }
+    #cta p { font-size: 18px; color: var(--text-secondary); margin-bottom: 40px; }
+    .cta-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: #070E1A;
+      padding: 64px 5% 32px;
+      border-top: 1px solid var(--border);
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 48px;
+      margin-bottom: 48px;
+    }
+    .footer-brand p {
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.7;
+      margin-top: 16px;
+      max-width: 260px;
+    }
+    .footer-col h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+      letter-spacing: 0.05em;
+    }
+    .footer-col a {
+      display: block;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 14px;
+      margin-bottom: 12px;
+      transition: color 0.2s;
+    }
+    .footer-col a:hover { color: var(--text-primary); }
+    .footer-bottom {
+      border-top: 1px solid var(--border);
+      padding-top: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .footer-bottom p { color: var(--text-muted); font-size: 13px; }
+
+    /* ─── SCROLL ANIMATION ─── */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+      .metric-divider { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a href="#" class="logo">
+    <div class="logo-icon">⬡</div>
+    明日数据 MingData
+  </a>
+  <ul class="nav-links" style="position:static; margin-left: 40px; flex: 1;">
+    <li class="dropdown">
+      <a href="#">平台 ▾</a>
+      <div class="dropdown-menu">
+        <a href="#">明数 DMP 数据管理平台</a>
+        <a href="#">明数开放平台（API & 生态）</a>
+        <a href="#">明数分析平台（BI & 洞察）</a>
+      </div>
+    </li>
+    <li><a href="#cases">案例</a></li>
+    <li class="dropdown">
+      <a href="#">资源 ▾</a>
+      <div class="dropdown-menu">
+        <a href="#">白皮书 / 行业报告</a>
+        <a href="#">博客 & 技术文章</a>
+        <a href="#">视频教程</a>
+      </div>
+    </li>
+    <li><a href="#resources">文档</a></li>
+  </ul>
+  <a href="#cta" class="nav-cta">立即体验 →</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-glow"></div>
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span></span>
+      新一代数据驱动营销平台
+    </div>
+    <h1>
+      <span class="gradient">让每一个数据决策<br/>创造真实增长</span>
+    </h1>
+    <p class="hero-sub">
+      明日数据为品牌提供全链路数据管理与智能营销能力——从人群洞察到精准投放，从开放生态到数据资产沉淀。
+    </p>
+    <div class="hero-btns">
+      <a href="#cta" class="btn-primary">立即免费体验</a>
+      <a href="#platforms" class="btn-secondary">了解平台 →</a>
+    </div>
+  </div>
+</section>
+
+<!-- PLATFORMS -->
+<section id="platforms">
+  <div class="section-header fade-up">
+    <div class="section-label">平台矩阵</div>
+    <h2 class="section-title">三大核心平台<br/>覆盖全链路数据需求</h2>
+    <p class="section-desc">无论是人群管理、数据开放还是业务洞察，明数都有对应的专业解决方案。</p>
+  </div>
+  <div class="platform-grid">
+    <div class="platform-card fade-up">
+      <div class="platform-icon icon-blue">🎯</div>
+      <h3>明数 DMP</h3>
+      <p>数据管理平台，整合一方/三方数据，构建精细化人群体系，支持全媒体投放触达。</p>
+      <a href="#" class="card-link">了解更多 →</a>
+    </div>
+    <div class="platform-card fade-up">
+      <div class="platform-icon icon-cyan">🔗</div>
+      <h3>明数开放平台</h3>
+      <p>提供标准化 API 与 SDK，将数据能力开放给合作伙伴，构建数据生态闭环。</p>
+      <a href="#" class="card-link">了解更多 →</a>
+    </div>
+    <div class="platform-card fade-up">
+      <div class="platform-icon icon-purple">📊</div>
+      <h3>明数分析平台</h3>
+      <p>BI 与数据洞察工具，可视化用户行为与营销效果，助力数据驱动决策。</p>
+      <a href="#" class="card-link">了解更多 →</a>
+    </div>
+  </div>
+</section>
+
+<!-- CAPABILITIES -->
+<section id="capabilities">
+  <div class="section-header fade-up" style="text-align:center;">
+    <div class="section-label">核心能力</div>
+    <h2 class="section-title">从数据到增长的完整闭环</h2>
+  </div>
+  <div class="cap-grid fade-up">
+    <div class="cap-item">
+      <div class="cap-icon">🔌</div>
+      <h3>数据接入</h3>
+      <p>支持 100+ 数据源，一方数据、媒体数据、行为数据统一汇聚管理。</p>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon">👥</div>
+      <h3>人群管理</h3>
+      <p>多维度标签体系，灵活圈选人群，支持实时更新与跨平台同步。</p>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon">🚀</div>
+      <h3>智能投放</h3>
+      <p>与主流媒体平台深度打通，一键推送人群至字节、腾讯、小红书等。</p>
+    </div>
+    <div class="cap-item">
+      <div class="cap-icon">🌐</div>
+      <h3>开放生态</h3>
+      <p>标准化 OpenAPI，低代码集成，与企业现有系统无缝融合。</p>
+    </div>
+  </div>
+</section>
+
+<!-- METRICS -->
+<section id="metrics">
+  <div class="section-label" style="text-align:center; margin-bottom:48px;">数据说话</div>
+  <div class="metrics-grid fade-up">
+    <div class="metric-item">
+      <div class="metric-num" data-target="500">0</div>
+      <div class="metric-label">服务品牌客户 500+</div>
+    </div>
+    <div class="metric-divider"></div>
+    <div class="metric-item">
+      <div class="metric-num" data-target="10" data-suffix="亿+">0</div>
+      <div class="metric-label">管理数据规模</div>
+    </div>
+    <div class="metric-divider"></div>
+    <div class="metric-item">
+      <div class="metric-num" data-target="200">0</div>
+      <div class="metric-label">开放 API 接口 200+</div>
+    </div>
+    <div class="metric-divider"></div>
+    <div class="metric-item">
+      <div class="metric-num" data-target="99.9" data-decimals="1" data-suffix="%">0</div>
+      <div class="metric-label">平台可用性 SLA</div>
+    </div>
+  </div>
+</section>
+
+<!-- CASES -->
+<section id="cases">
+  <div class="section-header fade-up">
+    <div class="section-label">客户案例</div>
+    <h2 class="section-title">众多头部品牌的<br/>数据增长伙伴</h2>
+  </div>
+  <div class="logos-row fade-up">
+    <div class="logo-chip">某头部美妆品牌</div>
+    <div class="logo-chip">某快消行业领导者</div>
+    <div class="logo-chip">某汽车品牌</div>
+    <div class="logo-chip">某连锁零售集团</div>
+    <div class="logo-chip">某金融服务机构</div>
+    <div class="logo-chip">某游戏公司</div>
+    <div class="logo-chip">某教育科技平台</div>
+  </div>
+  <div class="case-grid">
+    <div class="case-card fade-up">
+      <div class="case-tag">美妆行业</div>
+      <h3>某头部美妆品牌实现人群精准扩量</h3>
+      <p>通过明数 DMP 构建人群标签体系，结合相似扩量模型，在双 11 大促期间精准触达潜客，显著提升 ROI。</p>
+      <div class="case-metric">
+        <div class="case-metric-item">
+          <span>+42%</span>
+          <small>ROI 提升</small>
+        </div>
+        <div class="case-metric-item">
+          <span>3x</span>
+          <small>触达规模扩大</small>
+        </div>
+      </div>
+    </div>
+    <div class="case-card fade-up">
+      <div class="case-tag">快消行业</div>
+      <h3>全渠道数据打通驱动精细化运营</h3>
+      <p>整合线上线下多渠道数据，通过 ONE ID 体系建立统一用户视图，实现跨平台一致性用户运营。</p>
+      <div class="case-metric">
+        <div class="case-metric-item">
+          <span>85%</span>
+          <small>数据匹配率</small>
+        </div>
+        <div class="case-metric-item">
+          <span>-30%</span>
+          <small>获客成本降低</small>
+        </div>
+      </div>
+    </div>
+    <div class="case-card fade-up">
+      <div class="case-tag">汽车行业</div>
+      <h3>长周期购车决策链路数据化运营</h3>
+      <p>针对汽车行业长决策周期特点，构建全旅程用户生命周期模型，精准识别高意向用户并优化投放策略。</p>
+      <div class="case-metric">
+        <div class="case-metric-item">
+          <span>+58%</span>
+          <small>留资率提升</small>
+        </div>
+        <div class="case-metric-item">
+          <span>2.4x</span>
+          <small>转化效率提升</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RESOURCES -->
+<section id="resources">
+  <div class="section-header fade-up" style="text-align:center;">
+    <div class="section-label">资源中心</div>
+    <h2 class="section-title">快速开始，高效集成</h2>
+  </div>
+  <div class="res-grid fade-up">
+    <a href="#" class="res-card">
+      <div class="res-icon">📖</div>
+      <h3>API 文档</h3>
+      <p>完整的接口说明、参数定义与示例代码，快速接入明数开放平台。</p>
+      <div class="res-arrow">查看文档 →</div>
+    </a>
+    <a href="#" class="res-card">
+      <div class="res-icon">📦</div>
+      <h3>SDK 下载</h3>
+      <p>支持 Python、Java、Node.js 等主流语言，开箱即用。</p>
+      <div class="res-arrow">立即下载 →</div>
+    </a>
+    <a href="#" class="res-card">
+      <div class="res-icon">🎓</div>
+      <h3>新手指南</h3>
+      <p>从零到一快速上手明数平台，10 分钟完成第一个数据任务。</p>
+      <div class="res-arrow">开始学习 →</div>
+    </a>
+    <a href="#" class="res-card">
+      <div class="res-icon">📋</div>
+      <h3>白皮书</h3>
+      <p>深度行业洞察报告，了解数据驱动营销最新趋势与实践。</p>
+      <div class="res-arrow">免费下载 →</div>
+    </a>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta">
+  <div class="cta-content">
+    <h2>准备好了吗？<br/>让数据驱动你的增长</h2>
+    <p>免费试用 30 天，全功能开放，无需信用卡</p>
+    <div class="cta-btns">
+      <a href="#" class="btn-primary">立即免费开始</a>
+      <a href="#" class="btn-secondary">联系商务团队</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="#" class="logo">
+        <div class="logo-icon">⬡</div>
+        明日数据 MingData
+      </a>
+      <p>数据驱动增长的新一代智能营销平台，助力品牌实现精准触达与持续增长。</p>
+    </div>
+    <div class="footer-col">
+      <h4>产品</h4>
+      <a href="#">明数 DMP</a>
+      <a href="#">开放平台</a>
+      <a href="#">分析平台</a>
+      <a href="#">更新日志</a>
+    </div>
+    <div class="footer-col">
+      <h4>资源</h4>
+      <a href="#">API 文档</a>
+      <a href="#">SDK 下载</a>
+      <a href="#">白皮书</a>
+      <a href="#">博客</a>
+    </div>
+    <div class="footer-col">
+      <h4>公司</h4>
+      <a href="#">关于我们</a>
+      <a href="#">联系我们</a>
+      <a href="#">隐私政策</a>
+      <a href="#">服务条款</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 明数科技. 保留所有权利.</p>
+    <p>沪ICP备XXXXXXXX号</p>
+  </div>
+</footer>
+
+<script>
+  // ─── NAV SCROLL ───
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 40);
+  });
+
+  // ─── HERO CANVAS ───
+  const canvas = document.getElementById('hero-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [], animId;
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+
+  function initParticles() {
+    particles = [];
+    const count = Math.floor(W / 12);
+    for (let i = 0; i < count; i++) {
+      particles.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4,
+        size: Math.random() * 1.5 + 0.3,
+        alpha: Math.random() * 0.5 + 0.1
+      });
+    }
+  }
+
+  function drawGrid() {
+    const step = 60;
+    ctx.strokeStyle = 'rgba(30,111,255,0.06)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let x = 0; x < W; x += step) {
+      ctx.moveTo(x, 0); ctx.lineTo(x, H);
+    }
+    for (let y = 0; y < H; y += step) {
+      ctx.moveTo(0, y); ctx.lineTo(W, y);
+    }
+    ctx.stroke();
+  }
+
+  function drawParticles() {
+    for (const p of particles) {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(74,144,255,${p.alpha})`;
+      ctx.fill();
+    }
+  }
+
+  function drawConnections() {
+    const maxDist = 120;
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < maxDist) {
+          const alpha = (1 - dist / maxDist) * 0.15;
+          ctx.strokeStyle = `rgba(30,111,255,${alpha})`;
+          ctx.lineWidth = 0.5;
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  function tick() {
+    ctx.clearRect(0, 0, W, H);
+    drawGrid();
+    for (const p of particles) {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = W;
+      if (p.x > W) p.x = 0;
+      if (p.y < 0) p.y = H;
+      if (p.y > H) p.y = 0;
+    }
+    drawConnections();
+    drawParticles();
+    animId = requestAnimationFrame(tick);
+  }
+
+  resize(); initParticles(); tick();
+  window.addEventListener('resize', () => { resize(); initParticles(); });
+
+  // ─── SCROLL FADE-IN ───
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        // stagger children
+        const items = e.target.querySelectorAll ? [] : [];
+      }
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+  // ─── COUNTER ANIMATION ───
+  function animateCounter(el) {
+    const target = parseFloat(el.dataset.target);
+    const decimals = parseInt(el.dataset.decimals || '0');
+    const suffix = el.dataset.suffix || '+';
+    const duration = 2000;
+    const startTime = performance.now();
+
+    function update(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const value = eased * target;
+      el.textContent = value.toFixed(decimals) + (progress === 1 ? suffix : '');
+      if (progress < 1) requestAnimationFrame(update);
+    }
+    requestAnimationFrame(update);
+  }
+
+  const metricObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.querySelectorAll('.metric-num').forEach(animateCounter);
+        metricObserver.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.5 });
+  const metricsSection = document.getElementById('metrics');
+  if (metricsSection) metricObserver.observe(metricsSection);
+</script>
+</body>
+</html>
